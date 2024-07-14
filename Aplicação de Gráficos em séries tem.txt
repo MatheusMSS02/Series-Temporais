@@ -1,6 +1,6 @@
 Aplicação de Gráficos em séries temporais
 
-artic=read.csv(url("https://est.ufba.br/sites/est.ufba.br/files/temp_artic.csv"))
+artic=read.csv(temp_artic.csv"))
 par(mfrow=c(2,2))
 T=length(artic$temperature)
 plot.ts(artic$temperature, col="darkblue",axes = FALSE);

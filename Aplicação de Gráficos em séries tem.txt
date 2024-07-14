@@ -1,0 +1,86 @@
+Aplicação de Gráficos em séries temporais
+
+artic=read.csv(url("https://est.ufba.br/sites/est.ufba.br/files/temp_artic.csv"))
+par(mfrow=c(2,2))
+T=length(artic$temperature)
+plot.ts(artic$temperature, col="darkblue",axes = FALSE);
+axis(side = 1,(0:66)*12,labels = 1948:2014)
+hist(artic$temperature, col="lightblue")
+acf(artic$temperature,lag.max =  100);pacf(artic$temperature,lag.max =  100)
+
+
+#Histograma
+plot.ts(artic$temperature, col="darkblue",axes = FALSE)
+axis(side = 1,(0:66)*12,labels = 1948:2014)
+
+#Hisograma com reta de tendência
+par(mfrow = c(1,1))
+plot.ts(artic$temperature)
+abline(lm(artic$temperature~artic$X))
+
+#Análise Spectral (Raw periodogram)
+par(mfrow = c(1,1))
+y = artic$temperature
+
+specx = spectrum(y)
+
+
+pico = 67
+
+specxspan2 = spec.pgram(y,span=c(2,2),plot=FALSE)
+specxspan5 = spec.pgram(y,span=c(5,5),plot=FALSE)
+specxspan10 = spec.pgram(y,span=c(10,10),plot=FALSE)
+
+par(mfrow=c(2,2))
+plot(specx$freq,specx$spec,type="l",main="Periodograma Simples")
+text(0.1,27000,"67")
+plot(specxspan2$freq,specxspan2$spec,type="l",main="spans=c(2,2): Suavizacao leve")
+plot(specxspan5$freq,specxspan5$spec,type="l",main="spans=c(5,5): Suavizacao moderada")
+plot(specxspan10$freq,specxspan10$spec,type="l",main="spans=c(10,10): Muito suave-Degenerado")
+
+#Lag da série
+
+acf(x,lag.max =  100);pacf(x,lag.max =  100)
+
+
+#Ajustes de series temporais
+artic$residuos = y-x
+artic2 = subset(artic,artic$year>="1948"&artic$year<="1989")
+artic3 = subset(artic,artic$year>="1990"&artic$year<="2014")
+
+par(mfrow=c(1,2))
+fit1<- lm(artic2$residuos~time(artic2$residuos), na.action=NULL)
+plot.ts(artic2$residuos, main="Modelo de 1948 a 1989")
+abline(fit1)
+
+fit2<- lm(artic3$residuos~time(artic3$residuos), na.action=NULL)
+plot.ts(artic3$residuos, main="Modelo de 1990 a 2014")
+abline(fit2)
+
+summary(fit1);summary(fit2)
+
+
+
+#Residuos em gráfico da serie temporal
+
+res = artic$residuos
+plot.ts(res)
+lines(smooth.spline(time(res), res, spar=.5), lwd=2, col=4)
+lines(smooth.spline(time(res), res, spar= 1), lty=2, lwd=2, col=2)
+
+#Selecionando medidas de referência para modelos Arima interessantes e colocando em tabelas
+tabelaarima = as.data.frame(matrix(c(
+arima(res,c(3,1,3))$loglik,
+arima(res,c(3,1,3))$aic,
+arima(res,c(4,1,3))$loglik,
+arima(res,c(4,1,3))$aic,
+arima(res,c(4,1,4))$loglik,
+arima(res,c(4,1,4))$aic,
+arima(res,c(5,1,4))$loglik,
+arima(res,c(5,1,4))$aic,
+arima(res,c(5,1,5))$loglik,
+arima(res,c(5,1,5))$aic,
+arima(res,c(6,1,5))$loglik,
+arima(res,c(6,1,5))$aic,
+arima(res,c(6,1,6))$loglik,
+arima(res,c(6,1,6))$aic),nrow = 2),row.names = c("loglik","AIC"))
